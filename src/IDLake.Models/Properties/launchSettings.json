@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "IDLake.Models": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:51463;http://localhost:51465"
+    }
+  }
+}

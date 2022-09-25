@@ -1,0 +1,122 @@
+﻿@inject IJSRuntime jsRuntime
+@using System.IO
+@using System.Text
+@using Newtonsoft.Json
+@inject IToastService toastService
+@inject InfoDatasetService service
+@inject AzureBlobHelper blob;
+@inject NavigationManager NavMgr
+@using Texnomic.Blazor.JsonViewer
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-3 mb-n1" />
+            @CustomHeader
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer Style="overflow-y:scroll;max-height:400px;">
+            <MudGrid>
+                <MudItem xs="12" sm="12">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudTextField T="string" Label="Api Url" HelperText="Api Url"
+                                          @bind-Value="ApiUrl" />
+                            <MudTextField T="string" Label="UID (unique id dataset)" Lines="1" Variant="Variant.Outlined" @bind-Value="@TaskObject.UniqueId" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Api" />
+                            @if (IsInferencing)
+                            {
+                                <MudPaper Class="pa-4 mt-4" Elevation="3">
+
+                                    <MudText Typo="Typo.h6">Eksekusi Api Model in progress</MudText>
+                                    <MudText Typo="Typo.body1">Harap menunggu...</MudText>
+                                    <MudProgressCircular Color="Color.Primary" Size="Size.Medium" Indeterminate="true" />
+                                </MudPaper>
+
+                            }
+
+                            <MudText Typo="Typo.h6">Api Model Output</MudText>
+                            <MudSpacer></MudSpacer>
+                            <MudContainer Style="max-height: 200px; overflow-y: scroll">
+                                <JsonViewer @ref="JsonViewerInstance"></JsonViewer>
+                            </MudContainer>
+
+
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Disabled="@IsInferencing" ButtonType="ButtonType.Button" OnClick="Inference" Variant="Variant.Filled" Color="Color.Primary" Class="mr-2">Call API</MudButton>
+                            <MudButton Disabled="@IsInferencing" ButtonType="ButtonType.Button" OnClick="Cancel" Variant="Variant.Filled" Color="Color.Secondary">Cancel</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+
+            </MudGrid>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    bool IsInferencing = false;
+    string PayloadSample;
+    string ApiUrl;
+    string Result;
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+    protected JsonViewer JsonViewerInstance { get; set; }
+
+
+    [Parameter]
+    public string CustomHeader { get; set; }
+    [Parameter]
+    public InfoDataset TaskObject { get; set; }
+    [Parameter]
+    public Action DataChanged { get; set; }
+
+    string[] Columns;
+    string[] ColumnTypes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(TaskObject.Kolom))
+        {
+            ApiUrl = $"{NavMgr.BaseUri}viewdataset";
+        }
+    }
+    protected async ValueTask ViewJson(string Json)
+    {
+        await JsonViewerInstance.Render(Json);
+    }
+
+    HttpClient client;
+    async Task Inference()
+    {
+        if (IsInferencing) return;
+        IsInferencing = true;
+        await Task.Delay(1);
+        if (client == null) client = new HttpClient();
+
+        var res = await client.GetAsync(ApiUrl + $"?uid={TaskObject.UniqueId}");
+        if (res.IsSuccessStatusCode)
+        {
+            var result = await res.Content.ReadAsStringAsync();
+            Result = result;
+            await ViewJson(Result);
+        }
+        else
+        {
+            Result = "Error";
+        }
+        IsInferencing = false;
+        Snackbar.Add($"Completed", Severity.Info);
+
+    }
+}
