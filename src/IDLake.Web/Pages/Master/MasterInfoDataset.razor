@@ -194,8 +194,9 @@ else
         itemObject = item;
         var action = new Action(DataChanged);
         var parameters = new DialogParameters { ["TaskObject"] = itemObject, ["CustomHeader"] = customHeader, ["DataChanged"] = action };
+        DialogOptions maxWidth = new DialogOptions() { MaxWidth = MaxWidth.ExtraLarge };
 
-        var dialog = DialogService.Show<ApiDatasetPage>(customHeader, parameters);
+        var dialog = DialogService.Show<ApiDatasetPage>(customHeader, parameters,maxWidth);
         var result = await dialog.Result;
 
         if (!result.Cancelled)
