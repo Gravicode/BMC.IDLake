@@ -14,7 +14,7 @@
 <h1>Export Data @CustomHeader</h1>
 
 <p>Gunakan halaman ini untuk melakukan export data.</p>
-<div class="row">    
+<div class="row">
     <div class="col-12">
         <MudExpansionPanels>
             <MudExpansionPanel Text="Filter">
@@ -79,7 +79,7 @@
                 @if (dataTable != null)
                 {
                     <div class="table-responsive">
-                        <table id="gridData" name="gridData" class="table table-striped">
+                        <MudSimpleTable Style="overflow-x: auto;">
                             <thead>
                                 <tr>
                                     @foreach (DataColumn dc in dataTable.Columns)
@@ -88,20 +88,21 @@
                                     }
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach (DataRow dr in dataTable.Rows)
-                                {
-                                    <tr>
-                                        @foreach (DataColumn dc in dataTable.Columns)
-                                        {
-                                            <td>@dr[dc.ColumnName].ToString()</td>
-                                        }
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                }
+                                <tbody>
+                                    @foreach (DataRow dr in dataTable.Rows)
+                                    {
+                                        <tr>
+                                            @foreach (DataColumn dc in dataTable.Columns)
+                                            {
+                                                <td>@dr[dc.ColumnName].ToString()</td>
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </MudSimpleTable>
+
+                        </div>
+                    }
             </MudExpansionPanel>
         </MudExpansionPanels>
     </div>
