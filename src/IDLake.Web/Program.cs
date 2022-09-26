@@ -54,6 +54,7 @@ builder.Services.AddTransient<AzureBlobHelper>();
 builder.Services.AddSingleton<UserProfileService>();
 builder.Services.AddTransient<InfoDatasetService>();
 builder.Services.AddTransient<UserProfileService>();
+builder.Services.AddTransient<TabularReportService>();
 
 builder.Services.AddCors(options =>
 {

@@ -88,7 +88,7 @@
     {
         if (!string.IsNullOrEmpty(TaskObject.Kolom))
         {
-            ApiUrl = $"{NavMgr.BaseUri}viewdataset";
+            ApiUrl = $"{NavMgr.BaseUri}viewdataset?uid=";
         }
     }
     protected async ValueTask ViewJson(string Json)
@@ -104,7 +104,7 @@
         await Task.Delay(1);
         if (client == null) client = new HttpClient();
 
-        var res = await client.GetAsync(ApiUrl + $"?uid={TaskObject.UniqueId}");
+        var res = await client.GetAsync(ApiUrl + $"{TaskObject.UniqueId.Trim()}");
         if (res.IsSuccessStatusCode)
         {
             var result = await res.Content.ReadAsStringAsync();

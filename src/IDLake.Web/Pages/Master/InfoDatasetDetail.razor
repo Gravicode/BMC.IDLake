@@ -28,6 +28,9 @@
 
                             <MudDatePicker Label="Tanggal Pasang" Class="mt-3"
                                            @bind-Date="TaskObject.Tanggal" For="@(() => TaskObject.Tanggal)" />
+                            <MudAutocomplete T="string" Label="Kategori" @bind-Value="TaskObject.Category" SearchFunc="@Search1"
+                                             ResetValueOnEmptyText="@resetValueOnEmptyText"
+                                             CoerceText="@coerceText" CoerceValue="@coerceValue" />
 
                             <MudSelect T="string" Label="Tipe" @bind-Value="@TaskObject.Tipe" AnchorOrigin="Origin.BottomCenter">
                                 @foreach (DataStructures enumValue in Enum.GetValues(typeof(DataStructures)))
@@ -37,9 +40,16 @@
 
 
                             </MudSelect>
+                            <MudSelect T="AccessTypes" Label="Akses" @bind-Value="@TaskObject.AccessType" AnchorOrigin="Origin.BottomCenter">
+                                @foreach (AccessTypes enumValue in Enum.GetValues(typeof(AccessTypes)))
+                                {
+                                    <MudSelectItem Value="@(enumValue)">@enumValue.ToString()</MudSelectItem>
+                                }
 
+
+                            </MudSelect>
                             <MudTextField Label="Lisensi" Class="mt-3"
-                                          @bind-Value="TaskObject.License" For="@(() => TaskObject.License)" InputType="InputType.Text" />  
+                                          @bind-Value="TaskObject.License" For="@(() => TaskObject.License)" InputType="InputType.Text" />
 
                             <MudTextField Label="Deskripsi" Class="mt-3"
                                           @bind-Value="TaskObject.Deskripsi" For="@(() => TaskObject.Deskripsi)" InputType="InputType.Text" />
@@ -56,10 +66,10 @@
                             @if (TableDataSet != null)
                             {
                                 <MudButton ButtonType="ButtonType.Button" Size="Size.Small" @onclick="OpenDataPreview" Variant="Variant.Outlined" Color="Color.Success" Class="mr-2 mt-2 mb-2">Preview Dataset</MudButton>
-                              
+
                                 <MudTextField Label="Separator" Class="mt-3"
-                                          @bind-Value="Separator" For="@(() => Separator)" InputType="InputType.Text" />
-                                
+                                              @bind-Value="Separator" For="@(() => Separator)" InputType="InputType.Text" />
+
                             }
 
 
@@ -82,10 +92,14 @@
 
 
 @code {
+    private bool resetValueOnEmptyText;
+    private bool coerceText;
+    private bool coerceValue;
+
     CancellationTokenSource cts;
-   
+
     string Separator = ",";
-  
+
     string Logs;
     DataTable TableDataSet;
     string UID;
@@ -119,6 +133,14 @@
         if(!string.IsNullOrEmpty(TaskObject.DatasetPath)){
             TableDataSet = DataConverter.ConvertCSVtoDataTable(TaskObject.DatasetPath);
         }
+    }
+    private async Task<IEnumerable<string>> Search1(string value)
+    {
+
+        // if text is null or empty, show complete list
+        if (string.IsNullOrEmpty(value))
+            return AppConstants.Categories;
+        return AppConstants.Categories.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
     }
 
     async Task CancelTrain(){
@@ -161,7 +183,7 @@
 
         }
     }
-   
+
     const long MaxFileSize = 512_000 * 20;
     private async Task UploadFiles(InputFileChangeEventArgs e)
     {

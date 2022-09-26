@@ -32,7 +32,8 @@ namespace IDLake.Web.Data
         //public static string? CheckQRUrl { get; set; }
         public static string? DefaultPass { get; set; } = "123qweasd";
         public static string? LaporanStatistikUrl { get; set; }
-
+        public static string[] Categories = { "Geografi" ,"Sains","Keuangan","Ekonomi","Pemerintahan","Sosial Media","Games","Kedokteran",
+        "Fisika", "Kimia", "Matematika","Biologi","Agama","Sastra","Komputer", "Lainnya"};
        
         
     }
