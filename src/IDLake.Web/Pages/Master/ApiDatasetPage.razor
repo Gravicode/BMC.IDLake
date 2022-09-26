@@ -103,20 +103,31 @@
         IsInferencing = true;
         await Task.Delay(1);
         if (client == null) client = new HttpClient();
+        try
+        {
+            var res = await client.GetAsync(ApiUrl + $"{TaskObject.UniqueId.Trim()}");
+            if (res.IsSuccessStatusCode)
+            {
+                var result = await res.Content.ReadAsStringAsync();
+                Result = result;
+                await ViewJson(Result);
+                Snackbar.Add($"Completed", Severity.Info);
+            }
+            else
+            {
+                Result = "Error";
+                Snackbar.Add($"Error", Severity.Error);
+            }
+        }
+        catch(Exception ex)
+        {
+            Snackbar.Add($"Error: {ex}", Severity.Error);
+        }
+        finally
+        {
+            IsInferencing = false;
+        }
 
-        var res = await client.GetAsync(ApiUrl + $"{TaskObject.UniqueId.Trim()}");
-        if (res.IsSuccessStatusCode)
-        {
-            var result = await res.Content.ReadAsStringAsync();
-            Result = result;
-            await ViewJson(Result);
-        }
-        else
-        {
-            Result = "Error";
-        }
-        IsInferencing = false;
-        Snackbar.Add($"Completed", Severity.Info);
 
     }
 }
