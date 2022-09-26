@@ -147,6 +147,7 @@
     {
         try
         {
+            dataTable = ReportSvc.GetPreview(SelectedUid, filters,-1);
             var bytes = ReportSvc.ExportData(dataTable, ExportType);
             var ext = ExportType switch
             {
