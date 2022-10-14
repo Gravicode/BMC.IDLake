@@ -149,7 +149,7 @@ else
         dataset_names = service.GetPublicNames();
         dataset_kategori.Add("Semua");
 
-        dataset_kategori = service.GetCategory();
+        dataset_kategori.AddRange( service.GetCategory());
 
         await Search();
 
