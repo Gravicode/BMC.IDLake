@@ -150,9 +150,9 @@ else
         DataUser.Password = enc.Encrypt(DataUser.Password);
         if (svc.InsertData(DataUser))
         {
-            var msg = "Anda telah terdaftar di portal UB, semoga aman, lancar dan barokah. Ajkhr";
+            var msg = "Anda telah terdaftar di IDLake, terima kasih";
             await SmsService.SendSms(msg, DataUser.Phone);
-            await MailService.PostmarkSendEmail("Telah Teregister di portal UB", msg, DataUser.Email);
+            await MailService.PostmarkSendEmail("Telah Teregister di IDLake", msg, DataUser.Email);
             RegisterSuccess = true;
             StateHasChanged();
         }

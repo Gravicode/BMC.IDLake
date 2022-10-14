@@ -1,0 +1,173 @@
+﻿@inject IJSRuntime jsRuntime
+@using IDLake.Web.Data
+@inject NavigationManager NavMgr
+@inject IToastService toastService
+@using System.Data
+@using Texnomic.Blazor.JsonViewer
+@inject IDialogService Dialog
+@inject TabularReportService ReportSvc
+@inject ISnackbar Snackbar
+
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@using System.IO
+@using System.Text.Json
+
+<div class="row">
+    <div class="col-12">
+        <MudPaper Class="pa-4">
+            <MudExpansionPanels>
+                <MudExpansionPanel Text="Filter">
+                    @if (SelectedUid != null)
+                    {
+                        if (filters != null)
+                        {
+                            <MudText Typo="Typo.h6">Advance Filter</MudText>
+                            <table id="gridData" name="gridData" class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Pilih</th>
+                                        <th>Nama Kolom</th>
+                                        <th>Filter</th>
+                                        <th>Nilai</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var filter in filters)
+                                    {
+                                        <tr>
+                                            <td><MudCheckBox @bind-Checked="@filter.IsInclude" Color="Color.Primary"></MudCheckBox></td>
+                                            <td>
+                                                <MudText>@filter.ColumnName</MudText>
+                                            </td>
+                                            <td>
+                                                <MudSelect T="OperatorReport" @bind-Value="filter.Operator" Label="Operator" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                                                    @foreach (OperatorReport item in Enum.GetValues(typeof(OperatorReport)))
+                                                    {
+                                                        <MudSelectItem T="OperatorReport" Value="@item">@item.ToString()</MudSelectItem>
+
+                                                    }
+                                                </MudSelect>
+                                            </td>
+                                            <td>
+                                                <MudTextField @bind-Value="filter.ValueFilter" Label="Nilai" Variant="Variant.Text"></MudTextField>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+
+
+                            <MudPaper Class="pa-4 mt-4">
+                                <MudSelect T="ExportFileTypes" @bind-Value="ExportType" Label="Export File" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                                    @foreach (ExportFileTypes item in Enum.GetValues(typeof(ExportFileTypes)))
+                                    {
+                                        <MudSelectItem T="ExportFileTypes" Value="@item">@item.ToString()</MudSelectItem>
+
+                                    }
+                                </MudSelect>
+                            </MudPaper>
+                            <MudPaper Class="pa-4 mt-4">
+                                <MudButton ButtonType="MudBlazor.ButtonType.Button" @onclick="(() => Preview())" DisableElevation="true" Variant="Variant.Filled" Color="Color.Primary" Class="mr-2">Preview</MudButton>
+                                <MudButton ButtonType="MudBlazor.ButtonType.Button" @onclick="(() => Export())" DisableElevation="true" Variant="Variant.Filled" Color="Color.Primary" Class="mr-2">Export</MudButton>
+                            </MudPaper>
+                        }
+                    }
+
+                </MudExpansionPanel>
+                <MudExpansionPanel Text="Data Preview">
+                    @if (dataTable != null)
+                    {
+                        <div class="table-responsive">
+                            <MudSimpleTable Hover="true" Dense="true" FixedHeader="true" Style="height:300px;">
+                                <thead>
+                                    <tr>
+                                        @foreach (DataColumn dc in dataTable.Columns)
+                                        {
+                                            <th>@dc.ColumnName</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (DataRow dr in dataTable.Rows)
+                                    {
+                                        <tr>
+                                            @foreach (DataColumn dc in dataTable.Columns)
+                                            {
+                                                <td>@dr[dc.ColumnName].ToString()</td>
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </MudSimpleTable>
+
+                        </div>
+                    }
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </MudPaper>
+    </div>
+</div>
+@code {
+    [Parameter]
+    public string CustomHeader { get; set; }
+    [Parameter]
+    public InfoDataset TaskObject { get; set; }
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    string UserName;
+    ExportFileTypes ExportType = ExportFileTypes.Excel;
+    string SelectedValue;
+    List<TabularReportFilter> filters;
+    DataTable dataTable;
+    string SelectedUid;
+    async Task Preview()
+    {
+        if (!string.IsNullOrEmpty(SelectedUid))
+        {
+            dataTable = ReportSvc.GetPreview(SelectedUid, filters);
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+
+        var user = (await authenticationStateTask).User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            UserName = user.Identity.Name;
+
+
+        }
+
+        if (TaskObject != null)
+            OpenReport();
+
+    }
+    async Task Export()
+    {
+        try
+        {
+            dataTable = ReportSvc.GetPreview(SelectedUid, filters,-1);
+            var bytes = ReportSvc.ExportData(dataTable, ExportType);
+            var ext = ExportType switch
+            {
+                ExportFileTypes.Csv => ".csv",
+                ExportFileTypes.Excel => ".xlsx",
+                ExportFileTypes.Pdf => ".pdf",
+                ExportFileTypes.Html => ".html",
+                _ => throw new Exception("ngaco"),
+            };
+            await FileUtil.SaveAs(jsRuntime, $"Dokumen{ext}", bytes);
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError(ex.Message);
+        }
+    }
+
+    async Task OpenReport()
+    {
+        SelectedUid = TaskObject?.UniqueId;
+        filters = ReportSvc.GetFilters(SelectedUid);
+    }
+}

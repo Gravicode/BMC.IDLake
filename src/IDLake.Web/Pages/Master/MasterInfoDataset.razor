@@ -8,9 +8,9 @@
 @inject IDialogService DialogService
 @using System.IO
 
-<h1>Daftar InfoDataset</h1>
+<h1>Daftar Dataset</h1>
 
-<p>Gunakan halaman ini untuk melihat info InfoDataset.</p>
+<p>Gunakan halaman ini untuk melihat info Dataset.</p>
 
 @if (DataInfoDataset == null)
 {
@@ -40,12 +40,13 @@ else
             <MudTd DataLabel="Deskripsi">@item.Deskripsi</MudTd>
             <MudTd DataLabel="Actions">
                 @if (HasLogin)
-                {
-                <MudButton ButtonType="ButtonType.Button" @onclick="(() => PrepareForEdit(item))" DisableElevation="true" Variant="Variant.Filled" Color="Color.Primary" Class="mr-2">Ubah</MudButton>
-                <MudButton ButtonType="ButtonType.Button" @onclick="(() => PrepareForDelete(item))" DisableElevation="true" Variant="Variant.Filled" Color="Color.Error" Class="mr-2">Hapus</MudButton>
-                <MudButton ButtonType="ButtonType.Button" @onclick="(() => CallModelApi(item))" DisableElevation="true" Variant="Variant.Filled" Color="Color.Success" Class="mr-2">Api</MudButton>
-                }
-        </MudTd>
+                    {
+                    <MudButton ButtonType="ButtonType.Button" @onclick="(() => PrepareForEdit(item))" DisableElevation="true" Variant="Variant.Filled" Color="Color.Primary" Class="mr-2">Ubah</MudButton>
+                    <MudButton ButtonType="ButtonType.Button" @onclick="(() => PrepareForDelete(item))" DisableElevation="true" Variant="Variant.Filled" Color="Color.Error" Class="mr-2">Hapus</MudButton>
+                    <MudButton ButtonType="ButtonType.Button" @onclick="(() => CallModelApi(item))" DisableElevation="true" Variant="Variant.Filled" Color="Color.Success" Class="mr-2">Api</MudButton>
+                    <MudButton ButtonType="ButtonType.Button" @onclick="(() => Export(item))" DisableElevation="true" Variant="Variant.Filled" Color="Color.Info" Class="mr-2">Export Data</MudButton>
+                    }
+            </MudTd>
     </RowTemplate>
     <PagerContent>
         <MudTablePager />
@@ -181,7 +182,7 @@ else
             long.TryParse(result.Data.ToString(), out var NewId);
         }
 
-    } 
+    }
 
     private async Task CallModelApi(InfoDataset item)
     {
@@ -193,13 +194,34 @@ else
         itemObject = item;
         var action = new Action(DataChanged);
         var parameters = new DialogParameters { ["TaskObject"] = itemObject, ["CustomHeader"] = customHeader, ["DataChanged"] = action };
+        DialogOptions maxWidth = new DialogOptions() { MaxWidth = MaxWidth.ExtraLarge };
 
-        var dialog = DialogService.Show<ApiDatasetPage>(customHeader, parameters);
+        var dialog = DialogService.Show<ApiDatasetPage>(customHeader, parameters,maxWidth);
         var result = await dialog.Result;
 
         if (!result.Cancelled)
         {
-           
+
+        }
+
+    }
+    private async Task Export(InfoDataset item)
+    {
+        if (string.IsNullOrEmpty(item.DatasetPath))
+        {
+            Snackbar.Add("upload dataset terlebih dahulu", Severity.Info);
+            return;
+        }
+        customHeader = $"Export Data {item.Nama}";
+        itemObject = item;
+        var parameters = new DialogParameters { ["TaskObject"] = itemObject, ["CustomHeader"] = customHeader };
+
+        var dialog = DialogService.Show<ExportDataPage>(customHeader, parameters);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+
         }
 
     }

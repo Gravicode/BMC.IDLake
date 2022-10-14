@@ -28,8 +28,11 @@
     <script src="_framework/blazor.server.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
     <script src="vendor/jquery/jquery.min.js"></script>
-    <script>
-         function OpenUrl(url) {
+
+    <script src="_content/Texnomic.Blazor.JsonViewer/scripts/JsonViewer.js" type="text/javascript"></script>
+    
+    <script src="js/downloadfile.js"></script>
+    <script>function OpenUrl(url) {
             window.location = url;
         }
         function ShowModal(modalId) {
@@ -40,8 +43,6 @@
         }
         function ShowInfo(message) {
             alert(message);
-        }
-        
-    </script>
+        }</script>
 </body>
 </html>

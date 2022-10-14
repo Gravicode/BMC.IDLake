@@ -54,6 +54,7 @@ builder.Services.AddTransient<AzureBlobHelper>();
 builder.Services.AddSingleton<UserProfileService>();
 builder.Services.AddTransient<InfoDatasetService>();
 builder.Services.AddTransient<UserProfileService>();
+builder.Services.AddTransient<TabularReportService>();
 
 builder.Services.AddCors(options =>
 {
@@ -92,7 +93,7 @@ AppConstants.UploadUrlPrefix = Configuration["UploadUrlPrefix"];
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
-    options.KnownProxies.Add(IPAddress.Parse("103.189.234.66"));
+    options.KnownProxies.Add(IPAddress.Parse("103.134.154.100"));
 });
 
 builder.Services.AddSignalR(hubOptions =>

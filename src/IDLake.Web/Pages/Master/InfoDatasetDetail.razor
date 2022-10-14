@@ -89,6 +89,10 @@
 
 
 @code {
+    private bool resetValueOnEmptyText;
+    private bool coerceText;
+    private bool coerceValue;
+
     CancellationTokenSource cts;
 
     string Separator = ",";
@@ -127,6 +131,14 @@
         {
             TableDataSet = DataConverter.ConvertCSVtoDataTable(TaskObject.DatasetPath);
         }
+    }
+    private async Task<IEnumerable<string>> Search1(string value)
+    {
+
+        // if text is null or empty, show complete list
+        if (string.IsNullOrEmpty(value))
+            return AppConstants.Categories;
+        return AppConstants.Categories.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
     }
 
     async Task CancelTrain()
