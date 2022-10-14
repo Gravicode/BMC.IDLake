@@ -133,6 +133,7 @@ namespace IDLake.Models
         [DataMember(Order = 3)]
         public DateTime? Tanggal { get; set; }
         [DataMember(Order = 4)]
+        [Required]
         public string Nama { get; set; }
         [DataMember(Order = 5)]
         public string Tipe { get; set; }
@@ -143,15 +144,20 @@ namespace IDLake.Models
         [DataMember(Order = 8)]
         public string DatasetPath { get; set; }
         [DataMember(Order = 9)]
+        [Required]
         public string Deskripsi { get; set; }
         [DataMember(Order = 10)]
         public string CreatedBy { get; set; }
         [DataMember(Order = 11)]
+        [Required]
         public string License { get; set; }
         [DataMember(Order = 12)]
         public AccessTypes AccessType { get; set; } = AccessTypes.Public;
-      
-      
+        [DataMember(Order = 13)]
+        [Required]
+        public string Category { get; set; }
+
+
     }
     public enum DataStructures { Tabular, Blob, Audio, Video }
     public enum AccessTypes { Public, Private}

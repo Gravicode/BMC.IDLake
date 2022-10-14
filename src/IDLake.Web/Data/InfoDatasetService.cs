@@ -25,17 +25,43 @@ namespace IDLake.Web.Data
             return true;
         }
 
+        public List<InfoDataset> FindByKeyword(string Keyword,string Kategori="")
+        {
+            bool IsAll = string.IsNullOrEmpty(Keyword) ? true : false;
+            var data = from x in db.InfoDatasets
+                       where x.Nama.Contains(Keyword) || x.Deskripsi.Contains(Keyword) || IsAll
+                       select x;
+            if (!string.IsNullOrEmpty(Kategori) && Kategori!="Semua")
+            {
+                data.Where(x => x.Category == Kategori);
+            }
+            return data.ToList();
+        } 
+        
         public List<InfoDataset> FindByKeyword(string Keyword)
         {
+            bool IsAll = string.IsNullOrEmpty(Keyword) ? true : false;
             var data = from x in db.InfoDatasets
-                       where x.Nama.Contains(Keyword)
+                       where x.Nama.Contains(Keyword) || x.Deskripsi.Contains(Keyword) || IsAll
                        select x;
+           
             return data.ToList();
         }
 
         public List<InfoDataset> GetAllData()
         {
             return db.InfoDatasets.ToList();
+        } 
+        
+        public List<string> GetPublicNames()
+        {
+            var datas = db.InfoDatasets.Where(x=>x.AccessType == AccessTypes.Public).OrderBy(x=>x.Nama);
+            return datas.Select(x => x.Nama).Distinct().ToList();
+        } 
+        public List<string> GetCategory()
+        {
+            var datas = db.InfoDatasets.Where(x=>x.AccessType == AccessTypes.Public).OrderBy(x=>x.Category);
+            return datas.Select(x => x.Category).Distinct().ToList();
         }
 
         public InfoDataset GetDataById(object Id)

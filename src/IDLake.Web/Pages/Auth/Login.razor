@@ -11,14 +11,17 @@
 
 <AuthorizeView>
     <Authorized>
-        <b>Hello, @context.User.Identity.Name!</b>
-        <a class="ml-md-auto btn btn-primary"
-           href="/logout?returnUrl=/"
-           target="_top">Logout</a>
+        <b>Hello, Anda sudah login @context.User.Identity.Name!</b>
+        <br/>
+        <MudButton ButtonType="ButtonType.Button" @onclick="GotoMyDataset" DisableElevation="true" Variant="Variant.Outlined" Color="Color.Primary" Class="mr-2">Go to Welcome Page</MudButton>
+        
     </Authorized>
     <NotAuthorized>
-
+       
         <MudGrid>
+           @* <MudItem xs="12">
+                <MudImage  Src="/assets/idlake-white.png" Fluid="true" ObjectFit="ObjectFit.Fill"></MudImage>
+            </MudItem>*@
             <MudItem xs="12">
                 <MudText Align="Align.Center" Typo="Typo.h6">Login</MudText>
             </MudItem>
@@ -78,6 +81,10 @@
     async Task DaftarNow()
     {
         NavMgr.NavigateTo("/auth/register");
+    }
+    async Task GotoMyDataset()
+    {
+        NavMgr.NavigateTo("/welcome");
     }
     async Task LoginNow()
     {

@@ -18,60 +18,67 @@
         <EditForm Model="@TaskObject" OnValidSubmit="OnValidSubmit">
             <DataAnnotationsValidator />
             <MudContainer Style="overflow-y:scroll;max-height:400px;">
-            <MudGrid>
-                <MudItem xs="12" sm="12">
-                    <MudCard>
-                        <MudCardContent>
-                            <input type="hidden" @bind="@TaskObject.Id" />
-                            <MudTextField Label="Nama" HelperText="Nama InfoDataset"
-                                          @bind-Value="TaskObject.Nama" For="@(() => TaskObject.Nama)" />
+                <MudGrid>
+                    <MudItem xs="12" sm="12">
+                        <MudCard>
+                            <MudCardContent>
+                                <input type="hidden" @bind="@TaskObject.Id" />
+                                <MudTextField Label="Nama" HelperText="Nama InfoDataset"
+                                              @bind-Value="TaskObject.Nama" For="@(() => TaskObject.Nama)" />
 
-                            <MudDatePicker Label="Tanggal Pasang" Class="mt-3"
-                                           @bind-Date="TaskObject.Tanggal" For="@(() => TaskObject.Tanggal)" />
+                                <MudDatePicker Label="Tanggal Pasang" Class="mt-3"
+                                               @bind-Date="TaskObject.Tanggal" For="@(() => TaskObject.Tanggal)" />
 
-                            <MudSelect T="string" Label="Tipe" @bind-Value="@TaskObject.Tipe" AnchorOrigin="Origin.BottomCenter">
-                                @foreach (DataStructures enumValue in Enum.GetValues(typeof(DataStructures)))
+                                <MudSelect T="string" Label="Tipe" @bind-Value="@TaskObject.Tipe" AnchorOrigin="Origin.BottomCenter">
+                                    @foreach (DataStructures enumValue in Enum.GetValues(typeof(DataStructures)))
+                                    {
+                                        <MudSelectItem Value="@(enumValue.ToString())">@enumValue.ToString()</MudSelectItem>
+                                    }
+
+
+                                </MudSelect>
+                                <MudSelect T="string" Label="Kategori" @bind-Value="@TaskObject.Category" AnchorOrigin="Origin.BottomCenter">
+                                    @foreach (var item in AppConstants.KategoriData)
+                                    {
+                                        <MudSelectItem Value="@item" />
+                                    }
+
+                                </MudSelect>
+
+                                <MudTextField Label="Lisensi" Class="mt-3"
+                                              @bind-Value="TaskObject.License" For="@(() => TaskObject.License)" InputType="InputType.Text" />
+
+                                <MudTextField Label="Deskripsi" Class="mt-3"
+                                              @bind-Value="TaskObject.Deskripsi" For="@(() => TaskObject.Deskripsi)" InputType="InputType.Text" />
+
+                                <MudButton HtmlTag="label" Class="mr-2" Disabled="@IsTraining"
+                                           Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Filled.CloudUpload"
+                                           for="fileInput1">
+                                    Upload Dataset
+                                </MudButton>
+
+                                <InputFile id="fileInput1" Size="Size.Small" OnChange="UploadFiles" hidden />
+                                @if (TableDataSet != null)
                                 {
-                                    <MudSelectItem Value="@(enumValue.ToString())">@enumValue.ToString()</MudSelectItem>
+                                    <MudButton ButtonType="ButtonType.Button" Size="Size.Small" @onclick="OpenDataPreview" Variant="Variant.Outlined" Color="Color.Success" Class="mr-2 mt-2 mb-2">Preview Dataset</MudButton>
+
+                                    <MudTextField Label="Separator" Class="mt-3"
+                                              @bind-Value="Separator" For="@(() => Separator)" InputType="InputType.Text" />
+
                                 }
 
 
-                            </MudSelect>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton ButtonType="ButtonType.Submit" Disabled="@IsTraining" Variant="Variant.Filled" Color="Color.Primary" Class="mr-2">Simpan</MudButton>
+                                <MudButton ButtonType="ButtonType.Button" Disabled="@IsTraining" OnClick="Cancel" Variant="Variant.Filled" Color="Color.Secondary">Cancel</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
 
-                            <MudTextField Label="Lisensi" Class="mt-3"
-                                          @bind-Value="TaskObject.License" For="@(() => TaskObject.License)" InputType="InputType.Text" />  
-
-                            <MudTextField Label="Deskripsi" Class="mt-3"
-                                          @bind-Value="TaskObject.Deskripsi" For="@(() => TaskObject.Deskripsi)" InputType="InputType.Text" />
-
-                            <MudButton HtmlTag="label" Class="mr-2" Disabled="@IsTraining"
-                                       Variant="Variant.Filled"
-                                       Color="Color.Primary"
-                                       StartIcon="@Icons.Filled.CloudUpload"
-                                       for="fileInput1">
-                                Upload Dataset
-                            </MudButton>
-
-                            <InputFile id="fileInput1" Size="Size.Small" OnChange="UploadFiles" hidden />
-                            @if (TableDataSet != null)
-                            {
-                                <MudButton ButtonType="ButtonType.Button" Size="Size.Small" @onclick="OpenDataPreview" Variant="Variant.Outlined" Color="Color.Success" Class="mr-2 mt-2 mb-2">Preview Dataset</MudButton>
-                              
-                                <MudTextField Label="Separator" Class="mt-3"
-                                          @bind-Value="Separator" For="@(() => Separator)" InputType="InputType.Text" />
-                                
-                            }
-
-
-                        </MudCardContent>
-                        <MudCardActions>
-                            <MudButton ButtonType="ButtonType.Submit" Disabled="@IsTraining" Variant="Variant.Filled" Color="Color.Primary" Class="mr-2">Simpan</MudButton>
-                            <MudButton ButtonType="ButtonType.Button" Disabled="@IsTraining" OnClick="Cancel" Variant="Variant.Filled" Color="Color.Secondary">Cancel</MudButton>
-                        </MudCardActions>
-                    </MudCard>
-                </MudItem>
-
-            </MudGrid>
+                </MudGrid>
             </MudContainer>
         </EditForm>
     </DialogContent>
@@ -83,9 +90,9 @@
 
 @code {
     CancellationTokenSource cts;
-   
+
     string Separator = ",";
-  
+
     string Logs;
     DataTable TableDataSet;
     string UID;
@@ -116,13 +123,16 @@
             HasLogin = true;// Userservice.GetUserRole(UserName) == Roles.Admin;
         }
         UID = Guid.NewGuid().ToString().Replace("-", "_");//ModelBuilder.Tools.NumberGen.GenerateNumber(5); //
-        if(!string.IsNullOrEmpty(TaskObject.DatasetPath)){
+        if (!string.IsNullOrEmpty(TaskObject.DatasetPath))
+        {
             TableDataSet = DataConverter.ConvertCSVtoDataTable(TaskObject.DatasetPath);
         }
     }
 
-    async Task CancelTrain(){
-        if(cts!=null && IsTraining){
+    async Task CancelTrain()
+    {
+        if (cts != null && IsTraining)
+        {
             cts.Cancel();
         }
     }
@@ -161,7 +171,7 @@
 
         }
     }
-   
+
     const long MaxFileSize = 512_000 * 20;
     private async Task UploadFiles(InputFileChangeEventArgs e)
     {
@@ -197,12 +207,12 @@
         var cols = new List<string>();
         if (TableDataSet != null)
         {
-            foreach(DataColumn dc in TableDataSet.Columns)
+            foreach (DataColumn dc in TableDataSet.Columns)
             {
                 cols.Add(dc.ColumnName);
             }
         }
-        var columns = string.Join(",",cols);
+        var columns = string.Join(",", cols);
         TaskObject.Kolom = columns;
     }
 }

@@ -1,0 +1,205 @@
+﻿@page "/master/public-dataset"
+@page "/"
+@inject ISnackbar Snackbar
+@layout NoAuthLayout
+@inject IJSRuntime jsRuntime
+@inject NavigationManager NavMgr
+@inject IToastService toastService
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject IDialogService DialogService
+@inject InfoDatasetService service
+@using System.IO
+
+<h1>Publik Dataset</h1>
+
+<p>Gunakan halaman ini untuk mencari dan mengakses dataset publik.</p>
+
+<MudGrid>
+    <MudItem xs="12" sm="12">
+        <MudAutocomplete T="string" Label="Nama Dataset" @bind-Value="Keyword" SearchFunc="@LookupNama" Margin="Margin.Dense" Dense="true" Variant="Variant.Outlined" />
+    </MudItem>
+    <MudItem xs="12" sm="12">
+        <MudAutocomplete T="string" Label="Kategori" @bind-Value="Kategori" SearchFunc="@LookupKategori" Margin="Margin.Dense" Dense="true" Variant="Variant.Outlined" />
+    </MudItem>
+    <MudItem xs="12" sm="12">
+        <MudPaper Class="pa-4 mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" OnClick="Search">Cari</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Secondary" DisableElevation="true" OnClick="Reset" Class="mx-2">Reset</MudButton>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+
+@if (DataInfoDataset == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <MudGrid>
+        <MudItem xs="12">
+            <MudGrid Justify="Justify.FlexStart">
+                @foreach (var item in DataInfoDataset)
+                {
+
+                    <MudItem xs="4">
+                            <MudCard Class="d-flex flex-column justify-center mud-width-full py-8">
+                                <MudCardHeader>
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.h6">@item.Nama</MudText>
+                                    </CardHeaderContent>
+                                    <CardHeaderActions>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Default" />
+                                    </CardHeaderActions>
+                                </MudCardHeader>
+                                <MudCardContent>
+                                    <MudText>Created at @item.Tanggal?.ToString("dd/MMM/yyyy") by @item.CreatedBy.</MudText>
+                                    <MudText Typo="Typo.body2">@item.Deskripsi</MudText>
+                                </MudCardContent>
+                                <MudCardActions>
+                                    <MudButton Variant="Variant.Outlined" @onclick="(() => CallModelApi(item))" Color="Color.Primary">Akses API</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
+
+
+
+}
+
+
+@code {
+    bool HasLogin = false;
+    InfoDatasetDetail detail;
+    string customHeader = string.Empty;
+    List<InfoDataset> DataInfoDataset;
+    InfoDataset itemObject = new InfoDataset();
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    string UserName;
+
+    private bool dense = false;
+    private bool hover = true;
+    private bool striped = false;
+    private bool bordered = false;
+    private string searchString1 = "";
+    private InfoDataset selectedItem1 = null;
+
+    private string Keyword;
+    private List<string> dataset_names;
+    private string Kategori = "Semua";
+    private List<string> dataset_kategori;
+
+
+
+    private async Task<IEnumerable<string>> LookupNama(string value)
+    {
+        // In real life use an asynchronous function for fetching data from an api.
+        //await Task.Delay(5);
+
+        // if text is null or empty, show complete list
+        if (string.IsNullOrEmpty(value))
+            return dataset_names;
+        return dataset_names.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+    private async Task<IEnumerable<string>> LookupKategori(string value)
+    {
+        // In real life use an asynchronous function for fetching data from an api.
+        //await Task.Delay(5);
+
+        // if text is null or empty, show complete list
+        if (string.IsNullOrEmpty(value))
+            return dataset_kategori;
+        return dataset_kategori.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private HashSet<InfoDataset> selectedItems = new HashSet<InfoDataset>();
+
+
+    async Task DownloadFile(string Url)
+    {
+        if (!string.IsNullOrEmpty(Url))
+        {
+            NavMgr.NavigateTo(Url, true);
+        }
+        else
+        {
+            toastService.ShowError("Url kosong atau tidak valid.");
+        }
+    }
+
+    UserProfileService Userservice;
+    protected override async Task OnInitializedAsync()
+    {
+
+        if (Userservice == null) Userservice = new UserProfileService();
+        var user = (await authenticationStateTask).User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            UserName = user.Identity.Name;
+            HasLogin = true;// Userservice.GetUserRole(UserName) == Roles.Admin;
+        }
+        if (dataset_names == null) dataset_names = new();
+        if (dataset_kategori == null) dataset_kategori = new();
+
+        dataset_names = service.GetPublicNames();
+        dataset_kategori.Add("Semua");
+
+        dataset_kategori = service.GetCategory();
+
+        await Search();
+
+    }
+
+    async Task Search()
+    {
+        DataInfoDataset = service.FindByKeyword(Keyword, Kategori);
+    }
+    async Task Reset()
+    {
+        Keyword = "";
+        Kategori = "Semua";
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+        }
+    }
+
+    private async void DataChanged()
+    {
+        DataInfoDataset = service.GetAllData();
+        StateHasChanged();
+    }
+
+
+    private async Task CallModelApi(InfoDataset item)
+    {
+        if (string.IsNullOrEmpty(item.DatasetPath))
+        {
+            Snackbar.Add("upload dataset terlebih dahulu", Severity.Info);
+            return;
+        }
+        customHeader = "Call Api InfoDataset";
+        itemObject = item;
+        var action = new Action(DataChanged);
+        var parameters = new DialogParameters { ["TaskObject"] = itemObject, ["CustomHeader"] = customHeader, ["DataChanged"] = action };
+
+        var dialog = DialogService.Show<ApiDatasetPage>(customHeader, parameters);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+
+        }
+
+    }
+
+
+}
+

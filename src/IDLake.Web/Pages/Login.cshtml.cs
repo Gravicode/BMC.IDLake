@@ -22,7 +22,7 @@ namespace IDLake.Web.Pages
             OnGetAsync(string paramUsername, string paramPassword)
         {
             if (db == null) db = new IDLakeDB();
-            string returnUrl = Url.Content("~/");
+            string returnUrl = Url.Content("~/welcome");
             try
             {
                 // Clear the existing external cookie

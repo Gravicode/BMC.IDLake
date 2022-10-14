@@ -33,6 +33,8 @@ namespace IDLake.Web.Data
         public static string? DefaultPass { get; set; } = "123qweasd";
         public static string? LaporanStatistikUrl { get; set; }
 
+        public static string[] KategoriData = new string[] { "General", "Science", "Automotive", "Government", 
+        "Biology", "Chemistry","Physics","Fun","Machine Learning", "Office", "Entertainment","Games","Movies","Others","Language","Geography"}; 
        
         
     }
