@@ -153,8 +153,10 @@ namespace IDLake.Models
         public string License { get; set; }
         [DataMember(Order = 12)]
         public AccessTypes AccessType { get; set; } = AccessTypes.Public;
-      
-      
+        [DataMember(Order = 13)]
+        [Required]
+        public string Category { get; set; }
+
     }
     public enum DataStructures { Tabular, Blob, Audio, Video }
     public enum AccessTypes { Public, Private}

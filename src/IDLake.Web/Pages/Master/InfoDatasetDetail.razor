@@ -137,8 +137,8 @@
 
         // if text is null or empty, show complete list
         if (string.IsNullOrEmpty(value))
-            return AppConstants.Categories;
-        return AppConstants.Categories.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+            return AppConstants.KategoriData;
+        return AppConstants.KategoriData.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
     }
 
     async Task CancelTrain()
